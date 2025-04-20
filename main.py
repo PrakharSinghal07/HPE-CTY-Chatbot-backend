@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 frontendURL = os.getenv("FRONTEND_URL")
+
 app = FastAPI()
 origins = [
     frontendURL,
@@ -14,7 +15,7 @@ origins = [
 # Apply CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Allow your frontend's origin
+    allow_origins=origins,  # Allow your frontend's origin
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
