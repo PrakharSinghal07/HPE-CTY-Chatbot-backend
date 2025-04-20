@@ -1,9 +1,22 @@
-from fastapi import APIRouter
-from models.schemas import ChatRequest, ChatResponse
+from fastapi import APIRouter, UploadFile, File, Form
+from typing import Optional
+from pydantic import BaseModel
 from services.llm_service import get_llm_response
-router = APIRouter(prefix="/chat", tags=["Chatbot"])
+
+router = APIRouter(prefix="/chat", tags=["Chatbot"])  # ✅ Keep only this
+
+class ChatResponse(BaseModel):
+    response: str
 
 @router.post("/", response_model=ChatResponse)
-def get_chat_response(request: ChatRequest):
-  response = get_llm_response(request.query)
-  return {'response': response}
+async def get_chat_response(
+    message: str = Form(...),
+    file: Optional[UploadFile] = File(None)
+):
+    print("Received message:", message)
+    if file:
+        print("Received file:", file.filename)
+        # You can use: content = await file.read()
+
+    response = get_llm_response(message)
+    return {"response": response}
