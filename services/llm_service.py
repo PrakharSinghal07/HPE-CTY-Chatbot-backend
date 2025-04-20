@@ -1,4 +1,6 @@
 import random
+
+
 suggestion_bank = [
     "Steps to fix a reboot loop",
     "How to check node logs?",
@@ -9,7 +11,7 @@ suggestion_bank = [
     "How to analyze performance degradation?",
 ]
 
-def get_llm_response_and_suggestions(query: str):
+def get_llm_response(query: str):
     response = f"Mocked response to: '{query}'"
     return response
 
