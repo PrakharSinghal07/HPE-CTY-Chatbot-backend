@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 from services.llm_service import get_llm_response
 
-router = APIRouter(prefix="/chat", tags=["Chatbot"])  # ✅ Keep only this
+router = APIRouter(prefix="/chat", tags=["Chatbot"])
 
 class ChatResponse(BaseModel):
     response: str
@@ -16,7 +16,6 @@ async def get_chat_response(
     print("Received message:", message)
     if file:
         print("Received file:", file.filename)
-        # You can use: content = await file.read()
 
     response = get_llm_response(message)
     return {"response": response}

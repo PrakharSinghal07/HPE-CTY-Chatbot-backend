@@ -1,51 +1,90 @@
 from fastapi import APIRouter
-from models.schemas import Conversation
-from typing import Optional, List
-
+from models.schemas import NewConversation, ConvPatch
+import uuid
 router = APIRouter(prefix="/conversation", tags=["Chatbot"])
 
-# In-memory store for a single conversation
-conversationObj = {}
-conversationsArr = []
-
-# POST a single conversation (save current chat session)
-@router.post("/")
-def save_conversation(conversation: Conversation):
-    global conversationObj
-    if not conversation.messages:
-        return {"error": "Conversation must have messages."}
-    
-    # Save the incoming conversation object
-    conversationObj = conversation
-    print("Saved Conversation:")
-    print(conversationObj)
-    return {"message": "Conversation saved", "conversation": conversationObj}
-
-# GET the last saved conversation (resume session)
-@router.get("/")
-def get_conversation():
-    global conversationObj
-    if not conversationObj:
-        return {"error": "No conversation found. Start a new session."}
-    
-    print("Fetching Conversation:")
-    print(conversationObj)
-    return conversationObj
+conversationsArr = [{
+    "sessionId": str(uuid.uuid4()),
+    "title": "New Chat",
+    "messages": []
+}]
 
 
-@router.post('/all')
-def post_conversations(conversations: List[Conversation]):
+@router.get("/initial")
+def getInitialConversation():
+    if len(conversationsArr) == 0:
+        return {
+            "sessionId": str(uuid.uuid4()),
+            "title": "New Chat",
+            "messages": []
+        }
+    else:
+        return conversationsArr[0]
+
+
+@router.post("/create")
+def createNewConversation(newConversation: NewConversation):
     global conversationsArr
-    # Filter out empty message convos
-    filtered = [c for c in conversations if c.messages]
-    if not filtered:
-        return {"error": "No valid conversations to save."}
-    conversationsArr = filtered
+    obj = {
+        "sessionId": str(uuid.uuid4()),
+        "title": newConversation.title,
+        "messages": newConversation.messages
+    }
+    if len(conversationsArr) == 0:
+        conversationsArr = [obj]
+    else:
+        conversationsArr.insert(0, obj)
     print(conversationsArr)
-    return conversationsArr
+    return obj
 
 
-@router.get('/all')
-def getConversations():
-  global conversationsArr
-  return conversationsArr
+@router.get('/sidebar')
+def getSidebarDetails():
+    titleArr = []
+    for convo in conversationsArr:
+        titleArr.append({
+            "title": convo["title"],
+            "sessionId": convo["sessionId"]
+        })
+    return titleArr
+
+
+@router.delete("/{currentSessionID}")
+def delete_conversation(currentSessionID):
+    global conversationsArr
+    for index, conversation in enumerate(conversationsArr):
+        if conversation["sessionId"] == currentSessionID:
+            conversationsArr.pop(index)
+            if (len(conversationsArr) == 0):
+                conversationsArr = [{
+                    "sessionId": str(uuid.uuid4()),
+                    "title": "New Chat",
+                    "messages": []
+                }]
+            return conversation
+
+
+@router.post("/{currentSessionID}")
+def save_conversation(convo: ConvPatch, currentSessionID):
+    global conversationsArr
+    for index, convoo in enumerate(conversationsArr):
+        if convoo["sessionId"] == currentSessionID:
+
+            conversationsArr[index]["messages"].append(convo.userMsg)
+            conversationsArr[index]["messages"].append(convo.botMsg)
+            if conversationsArr[index]["title"] == "New Chat":
+                conversationsArr[index]["title"] = convo.prompt
+            return convoo
+
+
+@router.get("/active/{currentSessionID}")
+def getActiveConversation(currentSessionID):
+    global conversationsArr
+    global conversationsObj
+    print(currentSessionID)
+    print(conversationsArr)
+    for conversation in conversationsArr:
+        if conversation["sessionId"] == currentSessionID:
+            conversationsObj = conversation
+            return conversation
+    print("HELLO")

@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, Field
+from typing import List, Literal
 
 
 class ChatRequest(BaseModel):
@@ -12,9 +12,18 @@ class ChatResponse(BaseModel):
 
 class Suggestions(BaseModel):
   Suggestions: List[str]
-
-class Conversation(BaseModel):
-  messages: List[dict]
-  sessionId: str
-  title: str
   
+class Message(BaseModel):
+    type: Literal["user", "bot"]
+    text: str
+
+    
+class NewConversation(BaseModel):
+    title: str
+    messages: List[Message]
+    
+
+class ConvPatch(BaseModel):
+  userMsg: Message
+  botMsg: Message
+  prompt: str

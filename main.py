@@ -15,7 +15,7 @@ origins = [
 # Apply CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow your frontend's origin
+    allow_origins=["*"],  # Allow your frontend's origin
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
@@ -23,3 +23,4 @@ app.add_middleware(
 app.include_router(chat.router) # pending
 app.include_router(suggestions.router) # pending
 app.include_router(conversation.router) # pending
+
